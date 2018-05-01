@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres 
+  serviceName: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: postgres
+        image: arm32v7/postgres:10.3
+        ports:
+        - containerPort: 5432
+          name: psql
+        env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pg-secrets
+                key: PG_PASSWORD
+          - name: POSTGRES_USER
+            valueFrom:
+              configMapKeyRef:
+                name: pg-config-data
+                key: pg.user
+          - name: POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                name: pg-config-data
+                key: pg.db
+          - name: POSTGRES_DATA
+            valueFrom:
+              configMapKeyRef:
+                name: pg-config-data
+                key: pg.data
+        volumeMounts:
+        - name: pg-data
+          mountPath: /var/lib/postgresql
+  volumeClaimTemplates:
+  - metadata:
+      name: pg-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "local-storage"
+      resources:
+        requests:
+          storage: 1Gi
