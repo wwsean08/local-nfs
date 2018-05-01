@@ -43,7 +43,7 @@ spec:
                 key: pg.data
         volumeMounts:
         - name: pg-data
-          mountPath: /var/lib/postgresql
+          mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
   - metadata:
       name: pg-data
